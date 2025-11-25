@@ -1,0 +1,4 @@
+# Fichier: requirements.txt
+Flask
+Flask-SQLAlchemy
+mysql-connector-python  # Ou un autre connecteur MySQL comme PyMySQL

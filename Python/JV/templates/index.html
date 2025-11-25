@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+        integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+        integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>CRUD Python</title>
+</head>
+
+<body>
+    <section class="container" id="wrapper">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-10">
+                <h1>Jeux Vidéo (Python)</h1>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-outline-info addButton" data-toggle="modal" data-target="#ModalAdd"><i
+                        class="far fa-plus-square"></i></button>
+                <div class="modal fade" id="ModalAdd" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form name="AddJeuVideo" method="POST" action="{{ url_for('add_jeu') }}">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Ajouter un jeu</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <label for="Jeux_Titre">Titre</label>
+                                    <input type="text" name="Jeux_Titre" id="Jeux_Titre" placeholder="Titre"
+                                        class="form-control">
+                                    <label for="Jeux_Description">Description</label>
+                                    <textarea name="Jeux_Description" id="Jeux_Description" class="form-control"
+                                        placeholder="Description"></textarea>
+                                    <label for="Jeux_Prix">Prix</label>
+                                    <input type="text" name="Jeux_Prix" id="Jeux_Prix" placeholder="Prix"
+                                        class="form-control">
+                                    <label for="Jeux_DateSortie">Date de sortie</label>
+                                    <input type="date" name="Jeux_DateSortie" id="Jeux_DateSortie"
+                                        placeholder="date de sortie" class="form-control">
+                                    <label for="Jeux_PaysOrigine">Pays</label>
+                                    <input type="text" name="Jeux_PaysOrigine" id="Jeux_PaysOrigine" placeholder="Pays"
+                                        class="form-control">
+                                    <label for="Jeux_Mode">Mode de jeu</label>
+                                    <input type="text" name="Jeux_Mode" id="Jeux_Mode" placeholder="Mode de jeu"
+                                        class="form-control">
+                                    <label for="Jeux_Connexion">Connexion</label>
+                                    <input type="text" name="Jeux_Connexion" id="Jeux_Connexion" placeholder="Connexion"
+                                        class="form-control">
+                                    <label for="Genre_Id">Genre</label>
+                                    <select name="Genre_Id" id="Genre_Id" class="form-control">
+                                        {% for genre in genres %}
+                                        <option value="{{ genre.Genre_Id }}">{{ genre.Genre_Titre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    Plateformes <br>
+                                    {% for p in plateformes_all %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="Plateformes[]"
+                                            id="add_plateforme_{{ p.Plateforme_Id }}" value="{{ p.Plateforme_Id }}">
+                                        <label class="form-check-label" for="add_plateforme_{{ p.Plateforme_Id }}">{{
+                                            p.Plateforme_Nom }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="Submit" class="btn btn-primary">Save data</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-striped table-hover" id="jeuxVideo">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Titre</th>
+                            <th>Prix</th>
+                            <th>Date de sortie</th>
+                            <th>Genre</th>
+                            <th>Origine</th>
+                            <th>Mode</th>
+                            <th>Connexion</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                    </tfoot>
+                    <tbody>
+                        {% for jeu in jeux %}
+                        <tr>
+                            <td>{{ jeu.Jeux_Id }}</td>
+                            <td>{{ jeu.Jeux_Titre }}</td>
+                            <td>{{ "%.2f"|format(jeu.Jeux_Prix) }}&euro;</td>
+                            <td>{{ jeu.Jeux_DateSortie.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ jeu.genre.Genre_Titre }}</td>
+                            <td>{{ jeu.Jeux_PaysOrigine }}</td>
+                            <td>{{ jeu.Jeux_Mode }}</td>
+                            <td>{{ jeu.Jeux_Connexion }}</td>
+                            <td>
+                                <button class="btn btn-outline-info btn-block" data-toggle="modal"
+                                    data-target="#ModalShow{{ jeu.Jeux_Id }}"><i class="far fa-eye"></i></button>
+                                <div class="modal fade" id="ModalShow{{ jeu.Jeux_Id }}" tabindex="-1" role="dialog"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title">{{ jeu.Jeux_Titre }}</h4>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h4 class="ShowInfo">Description</h4>
+                                                {{ jeu.Jeux_Description|safe }}<br>
+                                                <h4 class="ShowInfo">Prix</h4>
+                                                {{ "%.2f"|format(jeu.Jeux_Prix) }}&euro;<br>
+                                                <h4 class="ShowInfo">Date de sortie</h4>
+                                                {{ jeu.Jeux_DateSortie.strftime('%Y-%m-%d') }}<br>
+                                                <h4 class="ShowInfo">Pays</h4>
+                                                {{ jeu.Jeux_PaysOrigine }}<br>
+                                                <h4 class="ShowInfo">Mode de jeu</h4>
+                                                {{ jeu.Jeux_Mode }}<br>
+                                                <h4 class="ShowInfo">Connexion</h4>
+                                                {{ jeu.Jeux_Connexion }}<br>
+                                                <h4 class="ShowInfo">Genre</h4>
+                                                {{ jeu.genre.Genre_Titre }}<br>
+                                                <h4 class="ShowInfo">Plateformes</h4>
+                                                {% for p in jeu.plateformes %}
+                                                {{ p.Plateforme_Nom }}<br>
+                                                {% else %}
+                                                Aucune plateforme listée.
+                                                {% endfor %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-warning btn-block" data-toggle="modal"
+                                    data-target="#ModalEdit{{ jeu.Jeux_Id }}"><i class="far fa-edit"></i></button>
+                                <div class="modal fade" id="ModalEdit{{ jeu.Jeux_Id }}" tabindex="-1" role="dialog"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <form name="EditJeuVideo" method="POST"
+                                                action="{{ url_for('update_jeu', jeu_id=jeu.Jeux_Id) }}">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Editer un jeu</h4>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <label for="Jeux_Titre">Titre</label>
+                                                    <input type="text" name="Jeux_Titre" id="Jeux_Titre"
+                                                        value="{{ jeu.Jeux_Titre }}" class="form-control">
+                                                    <label for="Jeux_Description">Description</label>
+                                                    <textarea name="Jeux_Description" id="Jeux_Description"
+                                                        class="form-control">{{ jeu.Jeux_Description }}</textarea>
+                                                    <label for="Jeux_Prix">Prix</label>
+                                                    <input type="text" name="Jeux_Prix" id="Jeux_Prix"
+                                                        value="{{ jeu.Jeux_Prix }}" class="form-control">
+                                                    <label for="Jeux_DateSortie">Date de sortie</label>
+                                                    <input type="date" name="Jeux_DateSortie" id="Jeux_DateSortie"
+                                                        value="{{ jeu.Jeux_DateSortie.strftime('%Y-%m-%d') }}"
+                                                        class="form-control">
+                                                    <label for="Jeux_PaysOrigine">Pays</label>
+                                                    <input type="text" name="Jeux_PaysOrigine" id="Jeux_PaysOrigine"
+                                                        value="{{ jeu.Jeux_PaysOrigine }}" class="form-control">
+                                                    <label for="Jeux_Mode">Mode de jeu</label>
+                                                    <input type="text" name="Jeux_Mode" id="Jeux_Mode"
+                                                        value="{{ jeu.Jeux_Mode }}" class="form-control">
+                                                    <label for="Jeux_Connexion">Connexion</label>
+                                                    <input type="text" name="Jeux_Connexion" id="Jeux_Connexion"
+                                                        value="{{ jeu.Jeux_Connexion }}" class="form-control">
+                                                    <label for="Genre_Id">Genre</label>
+                                                    <select name="Genre_Id" id="Genre_Id" class="form-control">
+                                                        {% for genre in genres %}
+                                                        <option value="{{ genre.Genre_Id }}" {% if
+                                                            jeu.Genre_Id==genre.Genre_Id %}selected{% endif %}>
+                                                            {{ genre.Genre_Titre }}
+                                                        </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    Plateformes <br>
+                                                    {% for p in plateformes_all %}
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="Plateformes[]"
+                                                            id="edit_plateforme_{{ jeu.Jeux_Id }}_{{ p.Plateforme_Id }}"
+                                                            value="{{ p.Plateforme_Id }}" {% if p in jeu.plateformes
+                                                            %}checked{% endif %}>
+                                                        <label class="form-check-label"
+                                                            for="edit_plateforme_{{ jeu.Jeux_Id }}_{{ p.Plateforme_Id }}">{{
+                                                            p.Plateforme_Nom }}</label>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('delete_jeu', jeu_id=jeu.Jeux_Id) }}" method="POST"
+                                    style="display:inline;"
+                                    onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce jeu ?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-block delete">
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/function.js') }}"></script>
+</body>
+
+</html>
