@@ -30,3 +30,6 @@ class Produit:
 
     def add_categorie(self, c: Categorie):
         self.categories.append(c)
+
+    def display(self):
+        return f"Nom : [ nom : {self.nom}, description : {self.description} , prix : {self.prix}]"

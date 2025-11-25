@@ -17,6 +17,8 @@ p.add_image("http://localhost/monimage2.png")
 p.add_categorie(c1)
 p.add_categorie(c2)
 
-print("--- Dump de p.categories ---")
-for cat in p.categories:
-    print(vars(cat))
+# print("--- Dump de p.categories ---")
+# for cat in p.categories:
+#     print(cat)
+
+print(p.display())
